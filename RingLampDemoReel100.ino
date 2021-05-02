@@ -14,6 +14,7 @@ FASTLED_USING_NAMESPACE
 //
 // ********************
 // Changes made to Matrix = Color from red to green
+// Changes made to Matrix = Reversed the direcion
 // Changes made to Sinelon = shortened the fading tail by 8
 // Changes made to NextPattern = 40ms in void loop()
 //
@@ -39,6 +40,14 @@ int pos = 0
 #define FRAMES_PER_SECOND  60
 
 
+#define GRAVITY           -9.81              // Downward (negative) acceleration of gravity in m/s^2
+#define h0                1                  // Starting height, in meters, of the ball (strip length)
+#define NUM_BALLS         4                // Number of bouncing balls you want (recommend < 7, but 20 is fun in its own way)
+#define SPEED .20       // Amount to increment RGB color by each cycle
+#define BG 0
+
+
+
 //FOR SYLON ETC
 ;uint8_t thisbeat =  23;
 uint8_t thatbeat =  28;
@@ -48,14 +57,14 @@ uint8_t thisbri = 255;
 
 
 
-
-
 // matrix config
 int thisdelay = 10;
 int thisdelays = 50;                                           // A delay value for the sequence(s)
-int thishues = 25;                                             // Change the color from red to green (85)
+int thishues = 25;
 int thissats = 255;
-int thisdirs = 0;
+int thisdirs = 1;
+int bgclr = 0;
+int bgbri = 0; 
 bool huerots = 0;
 int peakcount = 0;
 
@@ -85,7 +94,8 @@ bool gReverseDirection = false;
 
 
 //background color
-uint32_t currentBg = random(256);
+//uint32_t currentBg = random(256);
+uint32_t currentBg = 0;
 uint32_t nextBg = currentBg;
 int          myhue =   100;
 
@@ -126,13 +136,6 @@ uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 
 
-
-
-
-
-// voidloop cut here
-
-
 void rainbow()
 {
   // FastLED's built-in rainbow generator
@@ -164,7 +167,7 @@ void confetti()
 void sinelon()
 {
   // a colored dot sweeping back and forth, with fading trails
-  fadeToBlackBy( leds, NUM_LEDS, 8);                                                     // Changed from 2 to shorten tail
+  fadeToBlackBy( leds, NUM_LEDS, 8);
   //int pos = beatsin16( 13, 0, NUM_LEDS-1 );                                                //changed
   pos++; if(pos>=NUM_LEDS) pos=0;
   leds[pos] += CHSV( gHue, 255, 192);
@@ -245,12 +248,13 @@ void blur() {
 
 void matrix() {                                               // One line matrix
 
-  if (huerots) thishues=thishues-5;                           // changed from +5 to try to reverse
+  if (huerots) thishues=thishues+5;
 
   if (random16(90) > 80) {
     if (thisdirs == 0) leds[0] = CHSV(thishues, thissats, 255); else leds[NUM_LEDS-1] = CHSV(thishues, thissats, 255);
-  }
-  else {leds[0] = CHSV(thishues, thissats, 0);}
+ }
+  else {
+    if (thisdirs == 0) leds[0] = CHSV(bgclr, thissat, bgbri); else leds[NUM_LEDS-1] = CHSV(bgclr, thissat, bgbri);}
 
   if (thisdirs == 0) {
     for (int i = NUM_LEDS-1; i >0 ; i-- ) leds[i] = leds[i-1];
